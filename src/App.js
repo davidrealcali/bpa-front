@@ -1,7 +1,7 @@
 //import { DatePicker } from 'antd';
 import './App.scss';
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { HashRouter as Router, Route, Switch, Link } from 'react-router-dom';
 import routes from './config/routes';
 import AuthProvider from './providers/AuthProvider';
 
