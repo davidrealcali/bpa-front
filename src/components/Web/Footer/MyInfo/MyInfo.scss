@@ -1,0 +1,13 @@
+@import "../../../../scss/index.scss";
+
+.my-info {
+    img {
+        width: 150px !important;
+        margin-bottom: 20px !important;
+
+    }
+    h4 {
+        margin-bottom: 20px !important;
+        color: $primary-color-dark !important;
+    }
+}

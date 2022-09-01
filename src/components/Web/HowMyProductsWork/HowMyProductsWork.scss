@@ -1,0 +1,62 @@
+@import "../../../index.scss";
+
+.how-my-products-work {
+    margin-top: 100px !important;
+    margin-bottom:  50px !important;
+
+    &__title {
+        text-align: center !important;
+        line-height: 0.7 !important;
+        margin-bottom: 40px !important;
+
+        h2 {
+            color: $font-light !important;
+            font-size: 32px !important;
+            font-weight:  bold !important ;
+            text-transform: uppercase !important;
+        }
+        h3 {
+            color: $primary-color-light !important
+        }
+    }
+
+    .row-cards{
+        .ant-col {
+            padding: 15px !important;
+
+        }
+    }
+
+    &__card {
+        border: 0 !important;
+        background-color: $background-dark-light-web !important;
+        border-radius:  10 !important;
+        overflow: hidden !important;
+        text-align: center !important;
+        box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.75) !important;
+        -webkit-box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.75) !important;
+        -moz-box-shadow: 0px 0px 10px 2px rgba(0, 0, 0, 0.75) !important;
+
+        .ant-card-body {
+            min-height: 215px !important;
+        }
+
+        i {
+            font-size: 45px !important;
+            margin-bottom: 20px !important;
+            color: $primary-color-light !important;
+        }
+
+        .ant-card-meta-detail {
+            .ant-card-meta-title {
+                color: $primary-color-light !important;
+                font-size: 25px !important;
+                font-weight: bold !important;
+            }
+
+            .ant-card-meta-description {
+                color: $primary-color-dark !important;
+            }
+        }
+    }
+}
