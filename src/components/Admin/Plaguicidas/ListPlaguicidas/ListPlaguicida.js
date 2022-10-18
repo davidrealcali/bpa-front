@@ -1,19 +1,24 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {Button,  Popconfirm, Table, notification, Space, Form, Input, confirm } from "antd";
-import { DeleteOutlined , EditOutlined, SearchOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import {Button,  Popconfirm, Table, notification, Space, Form, Input } from "antd";
+import { DeleteOutlined , EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { getAccessTokenApi } from '../../../../api/auth';
 import Modal from "../../../Modal/Modal";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { DndProvider} from "react-dnd";
 import { HTML5Backend} from "react-dnd-html5-backend";
-import update from "immutability-helper";
 import { CSVLink } from "react-csv";
 import { deletePlaguicidas, updatePlaguicidas } from '../../../../api/plaguicida';
-import "./ListPlaguicida.scss";
 import AddPlaguicida from '../AddPlaguicidaForm/AddPlaguicida';
+import EditPlaguicidaForm from '../EditPlaguicidaForm/EditPlaguicidaForm';
+import { decodeRolJWT } from '../../../../utils/formValidation';
+import ViewPlaguicidaForm from '../ViewPlaguicidaForm/ViewPlaguicidaForm';
+import AddIngredienteActivoForm from '../AddIngredienteActivoForm/AddIngredienteActivoForm';
+import "./ListPlaguicida.scss";
+
 
 export default function ListPlaguicida( props ) {
-  const { plaguicidas, setReloadPlaguicidas } = props;
+  const { plaguicidas, setReloadPlaguicidas, ingredientes } = props;
   const [ gridData, setGridData ] = useState([]);
+  const [ ingredienteData, setIngredienteData ] = useState([]);
   const [ loading, setLoading] = useState(false);
   const [ editRowKey, setEditRowKey] = useState("");
   const [ sortedInfo, setSortedInfo ] = useState({});
@@ -24,14 +29,23 @@ export default function ListPlaguicida( props ) {
   const [ modalTitle, setModalTitle ] = useState("");
   const [ modalContent, setModalContent ] = useState(null);
   const [ page, setPage ] = useState(1);
-  const [ pageSize, setPageSize ] = useState(2);
+  const [ pageSize, setPageSize ] = useState(4);
   let [ filteredData ] = useState();
-
-  const type = "DraggableBodyRow";
 
   useEffect(() => {
     loadData();
   }, [plaguicidas]);
+
+  useEffect(() => {
+    loadData2();
+  }, [ingredientes]);
+
+  const loadData2 = async() => {
+    setLoading(true);
+    setIngredienteData(ingredientes);
+    setSearchText("");
+    setLoading( false );
+  }
 
   const loadData = async() => {
     setLoading(true);
@@ -39,48 +53,6 @@ export default function ListPlaguicida( props ) {
     setSearchText("");
     setLoading( false );
   }
-
-  const DraggableBodyRow = ({
-    index,
-    moveRow,
-    className,
-    style,
-    ...restProps
-  }) => {
-     const ref = useRef();
-     const [{ isOver, dropClassName }, drop] = useDrop({
-        accept: type,
-        collect: ( monitor ) => {
-            const { index: dragIndex } = monitor.getItem() || {};
-            if( dragIndex === index ){
-                return {};
-            }
-            return {
-                isOver: monitor.isOver(),
-                dropClassName : dragIndex < index ? "drop-down-downward" : "drop-over-upward"
-            }
-        },
-        drop : (item) => {
-            moveRow(item.index, index)
-        },
-     });
-     const [, drag] = useDrag({
-        type,
-        item: { index},
-        collect: (monitor) => ({
-            isDragging : monitor.isDragging()
-        })
-    });
-     drop(drag(ref));
-     return (
-        <tr
-            ref={ref}
-            className={`${className}${isOver ? dropClassName : ""}`}
-            style={{ cursor: "move", ...style}}
-            {...restProps}
-        />
-     )
-  };
 
   const dataPlaguicidaMap = gridData.map( (item) => ({
     ...item
@@ -92,23 +64,11 @@ export default function ListPlaguicida( props ) {
     info: `Prueba bro`
  }));
 
- const moveRow = useCallback((dragIndex, hoverIndex) => {
-    const dragRow = modifiedPlaguicidaData[dragIndex];
-    setGridData(update(
-        modifiedPlaguicidaData, {
-            $splice : [
-                [dragIndex, 1 ],
-                [hoverIndex, 0, dragRow ]
-            ]
-        }
-    ));
-  }, 
-     [modifiedPlaguicidaData]
-  );
-
  const handleDelete = ( value ) => {
     const uid = value.uid;
     const token = getAccessTokenApi();
+    const { estado, mensaje } = decodeRolJWT(token);
+    if( !estado ) { return notification["error"]({ message: mensaje }); }
     deletePlaguicidas( token, uid).then( response => {
         console.log(response);
         notification["success"]({
@@ -162,6 +122,12 @@ export default function ListPlaguicida( props ) {
  };
 
  const edit = ( record ) => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje } = decodeRolJWT(token);
+    if( !estado ) {
+        return notification["error"]({ message: mensaje });
+    }
+
     form.setFieldsValue({
         nombre: "",
         registroIca: "",
@@ -185,22 +151,48 @@ export default function ListPlaguicida( props ) {
     setFilteredInfo( filters );
     setSortedInfo({ columnKey: field, order});
  }
+
+ const editarForm = ( plaguicida ) => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje } = decodeRolJWT(token);
+    if( !estado ) {
+        return notification["error"]({ message: mensaje});
+    }
+    setIsVisibleModal(true);
+    setModalTitle(`Editar plagucida: ${plaguicida.nombre}`)
+    setModalContent(
+        <EditPlaguicidaForm
+            setIsVisibleModal={setIsVisibleModal}
+            setReloadPlaguicidas={setReloadPlaguicidas}
+            plaguicida={plaguicida}
+        />
+    )
+ }
+
+ const viewPlaguicidaForm = (plaguicida) => {
+    setModalTitle('Plaguicida: '+plaguicida.nombre)
+    setIsVisibleModal(true);
+    setModalContent(
+        <ViewPlaguicidaForm
+            setIsVisibleModal={setIsVisibleModal}
+            setReloadPlaguicidas={setReloadPlaguicidas}
+            plaguicida={plaguicida}
+        />
+    );
+ }
+
  const columns = [
     {
         title: "Nombre",
         dataIndex: "nombre",
         align : "center",
         editTable: true,
-        sorter: (a,b) => a.nombe.length - b.nombre.length,
-        sortOrder: sortedInfo.columnKey === "nombre" && sortedInfo.order
     },
     {
         title: "Registro Ica",
         dataIndex: "registroIca",
         align : "center",
         editTable: true,
-        sorter: (a,b) => a.registroIca.length - b.registroIca.length,
-        sortOrder: sortedInfo.columnKey === "registroIca" && sortedInfo.order
     },
     {
         title: "Tipo registro",
@@ -215,12 +207,6 @@ export default function ListPlaguicida( props ) {
         editTable: true
     },
     {
-        title: "Recomendaciones",
-        dataIndex: "recomendaciones",
-        align : "center",
-        editTable: true
-    },
-    {
         title: "Clase plaguicida",
         dataIndex: "clasePlaguicida",
         align : "center",
@@ -229,12 +215,6 @@ export default function ListPlaguicida( props ) {
     {
         title: "Tipo vigencia",
         dataIndex: "tipoVigencia",
-        align : "center",
-        editTable: false
-    },
-    {
-        title: "Descripcion",
-        dataIndex: "descripcion",
         align : "center",
         editTable: false
     },
@@ -253,6 +233,9 @@ export default function ListPlaguicida( props ) {
                         <DeleteOutlined />
                     </Button>        
                 </Popconfirm>
+                <Button type='primary' onClickCapture={ () => editarForm(record)}>
+                      <EditOutlined />
+                </Button> 
                 { editable ? (
                     <span>
                         <Space size="middle">
@@ -264,10 +247,13 @@ export default function ListPlaguicida( props ) {
                         </Space>
                     </span>
                 ): (
-                    <Button type='primary' onClickCapture={() => edit(record)} >
+                    <Button type='edit' onClickCapture={() => edit(record)} >
                         <EditOutlined />
                     </Button>
                 )}
+                <Button type="primary" onClickCapture={() => viewPlaguicidaForm(record)}>
+                     <EyeOutlined />
+                </Button> 
             </Space>
          ) : null;
        }
@@ -340,17 +326,41 @@ export default function ListPlaguicida( props ) {
  };
 
 const addPlaguicidaModal = () => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
     setIsVisibleModal(true);
     setModalTitle("Creando nuevo plaguicida");
     setModalContent(
         <AddPlaguicida  setIsVisibleModal={ setIsVisibleModal} setReloadPlaguicidas={ setReloadPlaguicidas}/>
     )
 };
+
+const addIngredienteActivo = (e) => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
+    setIsVisibleModal(true);
+    setModalTitle("Adicionar ingrediente activo");
+    setModalContent(
+        <AddIngredienteActivoForm 
+           setIsVisibleModal={setIsVisibleModal}
+           plaguicidas={gridData}
+           setReloadPlaguicidas={setReloadPlaguicidas}
+           ingredientes={ingredienteData}
+           setIngredienteData={setIngredienteData}
+        />
+    )
+}
   
   return (
-    <div className='data-table-plaguicida' style={{ marginTop: 10}}>
+    <div className='data-table' style={{ marginTop: 10}}>
         <div className="menu-web-list__header">
              <Button type="primary" onClick={ () => addPlaguicidaModal()} >Crear Plaguicida
+             </Button>
+        </div>
+        <div className="menu-web-list__header">
+             <Button type="danger" onClick={ () => addIngredienteActivo()} >Adicionar Ingrediente Activo
              </Button>
         </div>
         <Space style={{marginBottom: 16}}>
@@ -378,14 +388,9 @@ const addPlaguicidaModal = () => {
                     columns={mergedColumns}
                     components= {{
                         body: {
-                            cell: EditableCell,
-                            row: DraggableBodyRow
+                            cell: EditableCell
                         }
                     }}
-                    onRow={(record, index) => ({
-                        index,
-                        moveRow
-                    })}
                     dataSource={filteredData && filteredData.length ? filteredData: modifiedPlaguicidaData}
                     expandable={{
                         expandedRowRender: ( record )=> (

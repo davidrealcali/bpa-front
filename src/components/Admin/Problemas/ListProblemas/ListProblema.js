@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {Button,  Popconfirm, Table, notification, Space, Form, Input, confirm } from "antd";
-import { DeleteOutlined , EditOutlined, SearchOutlined } from '@ant-design/icons';
+import React, { useState, useEffect} from 'react';
+import {Button,  Popconfirm, Table, notification, Space, Form, Input} from "antd";
+import { DeleteOutlined , EditOutlined, EyeOutlined} from '@ant-design/icons';
 import { getAccessTokenApi } from '../../../../api/auth';
-import "./ListProblema.scss";
 import Modal from "../../../Modal/Modal";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend} from "react-dnd-html5-backend";
-import update from "immutability-helper";
 import { CSVLink } from "react-csv";
 import { deleteProblemas, updateProblemas } from '../../../../api/problema';
 import AddProblemaForm from "../../Problemas/AddProblemaForm/AddProblemaForm";
+import EditProblemaForm from '../EditProblemaForm';
+import { decodeRolJWT } from '../../../../utils/formValidation';
+import ViewProblemaForm from '../ViewProblemaForm/ViewProblemaForm';
+
+import "./ListProblema.scss";
 
 export default function ListProblema( props) {
   const { problemas, setReloadProblemas } = props;
@@ -24,7 +27,8 @@ export default function ListProblema( props) {
   const [ modalTitle, setModalTitle ] = useState("");
   const [ modalContent, setModalContent ] = useState(null);
   let [ filteredData ] = useState();
-  const type = "DraggableBodyRow";
+  const [ page, setPage ] = useState(1);
+  const [ pageSize, setPageSize ] = useState(4);
 
   useEffect(() => {
     loadData();
@@ -37,48 +41,6 @@ export default function ListProblema( props) {
     setLoading( false );
   }
 
-  const DraggableBodyRow = ({
-    index,
-    moveRow,
-    className,
-    style,
-    ...restProps
-  }) => {
-     const ref = useRef();
-     const [{ isOver, dropClassName }, drop] = useDrop({
-        accept: type,
-        collect: ( monitor ) => {
-            const { index: dragIndex } = monitor.getItem() || {};
-            if( dragIndex === index ){
-                return {};
-            }
-            return {
-                isOver: monitor.isOver(),
-                dropClassName : dragIndex < index ? "drop-down-downward" : "drop-over-upward"
-            }
-        },
-        drop : (item) => {
-            moveRow(item.index, index)
-        },
-     });
-     const [, drag] = useDrag({
-        type,
-        item: { index},
-        collect: (monitor) => ({
-            isDragging : monitor.isDragging()
-        })
-    });
-     drop(drag(ref));
-     return (
-        <tr
-            ref={ref}
-            className={`${className}${isOver ? dropClassName : ""}`}
-            style={{ cursor: "move", ...style}}
-            {...restProps}
-        />
-     )
-  };
-
   const dataProblemaMap = gridData.map( (item) => ({
      ...item
   })); 
@@ -89,23 +51,11 @@ export default function ListProblema( props) {
     info: `prueba`
  }));
 
- const moveRow = useCallback((dragIndex, hoverIndex) => {
-    const dragRow = modifiedProblemaData[dragIndex];
-    setGridData(update(
-        modifiedProblemaData, {
-            $splice : [
-                [dragIndex, 1 ],
-                [hoverIndex, 0, dragRow ]
-            ]
-        }
-    ));
-  }, 
-     [modifiedProblemaData]
-  );
-
  const handleDelete = ( value ) => {
-    const uid = value.uid;
     const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
+    const uid = value.uid;
     deleteProblemas( token, uid).then( response => {
         notification["success"]({
             message: response.message
@@ -157,6 +107,9 @@ export default function ListProblema( props) {
  };
 
  const edit = ( record ) => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
     form.setFieldsValue({
         nombreComun: "",
         nombreCientifico: "",
@@ -173,6 +126,32 @@ export default function ListProblema( props) {
     const { order, field } = sorter;
     setFilteredInfo( filters );
     setSortedInfo({ columnKey: field, order});
+ }
+
+ const editarForm = ( problema ) => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
+    setIsVisibleModal(true);
+    setModalTitle(`Editar problema: ${problema.nombreComun}`);
+    setModalContent(
+        <EditProblemaForm
+            setIsVisibleModal={setIsVisibleModal}
+            setReloadProblemas={setReloadProblemas}
+            problema={problema}
+        />
+    );
+ }
+
+ const viewProblemaForm = ( problema ) => {
+    setModalTitle(`Problema: ${problema.nombreComun}`);
+    setIsVisibleModal(true);
+    setModalContent(
+        <ViewProblemaForm
+            problema={problema}
+            setIsVisibleModal={setIsVisibleModal}
+        />
+    );
  }
  
  const columns = [
@@ -201,18 +180,6 @@ export default function ListProblema( props) {
         editTable: false
     },
     {
-        title: "Sintomas",
-        dataIndex: "sintomas",
-        align : "center",
-        editTable: true
-    },
-    {
-        title: "Ciclo vida",
-        dataIndex: "cicloVida",
-        align : "center",
-        editTable: true
-    },
-    {
         title: "Accion",
         dataindex: "action",
         align : "center",
@@ -227,6 +194,9 @@ export default function ListProblema( props) {
                         <DeleteOutlined />
                     </Button>        
                 </Popconfirm>
+                <Button type='primary' onClickCapture={ () => editarForm(record)} >
+                        <EditOutlined />
+                </Button> 
                 { editable ? (
                     <span>
                         <Space size="middle">
@@ -238,10 +208,13 @@ export default function ListProblema( props) {
                         </Space>
                     </span>
                 ): (
-                    <Button type='primary' onClickCapture={() => edit(record)} >
+                    <Button type='edit' onClickCapture={() => edit(record)} >
                         <EditOutlined />
                     </Button>
                 )}
+                <Button type="primary" onClickCapture={() => viewProblemaForm(record)}>
+                     <EyeOutlined />
+                </Button>
             </Space>
          ) : null;
        }
@@ -308,6 +281,9 @@ export default function ListProblema( props) {
  };
 
  const addCultivoModal = () => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
     setIsVisibleModal(true);
     setModalTitle("Creando nuevo problema");
     setModalContent(
@@ -346,14 +322,9 @@ export default function ListProblema( props) {
                     columns={mergedColumns}
                     components= {{
                         body: {
-                            cell: EditableCell,
-                            row: DraggableBodyRow
+                            cell: EditableCell
                         }
                     }}
-                    onRow={(record, index) => ({
-                        index,
-                        moveRow
-                    })}
                     dataSource={filteredData && filteredData.length ? filteredData: modifiedProblemaData}
                     expandable={{
                         expandedRowRender: ( record )=> (
@@ -364,6 +335,14 @@ export default function ListProblema( props) {
                     bordered
                     loading={loading}
                     onChange={handleChange}
+                    pagination={{
+                        current: page,
+                        pageSize: pageSize,
+                        onChange: ( page, pageSize) => {
+                            setPage(page);
+                            setPageSize(pageSize)
+                        }
+                    }}
                 >
                 </Table>
             </DndProvider>

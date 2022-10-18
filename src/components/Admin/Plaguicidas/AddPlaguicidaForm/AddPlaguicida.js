@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Form, Input, Select, Button, Row, Col, notification } from "antd";
 import { UserAddOutlined, MailOutlined, LinkOutlined} from '@ant-design/icons';
 import { getAccessTokenApi } from '../../../../api/auth';
-import "./AddPlaguicida.scss";
 import { postPlaguicidaApi } from '../../../../api/plaguicida';
+
+import "./AddPlaguicida.scss";
+import TextArea from 'antd/lib/input/TextArea';
 
 export default function AddPlaguicida( props ) {
     const { setIsVisibleModal, setReloadPlaguicidas } = props;
@@ -154,8 +156,9 @@ function AddForm( props ) {
             <Row gutter={24}>
                 <Col span={12}>
                     <Form.Item>
-                        <Input
+                        <TextArea
                             placeholder="Formulacion"
+                            rows={5}
                             value={plaguicidaData.formulacion}
                             onChange ={ e => setPlagucidaData({...plaguicidaData , formulacion: e.target.value })}
                          />
@@ -163,7 +166,8 @@ function AddForm( props ) {
                 </Col>
                 <Col span={12}>
                     <Form.Item>
-                        <Input
+                        <TextArea
+                            rows={5}
                             placeholder="Descripcion"
                             value={plaguicidaData.descripcion}
                             onChange ={ e => setPlagucidaData({...plaguicidaData , descripcion: e.target.value })}

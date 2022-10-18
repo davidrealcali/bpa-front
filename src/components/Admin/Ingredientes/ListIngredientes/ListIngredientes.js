@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {Button,  Popconfirm, Table, notification, Space, Form, Input, confirm } from "antd";
-import { DeleteOutlined , EditOutlined, SearchOutlined } from '@ant-design/icons';
-import { getAccessTokenApi } from '../../../../api/auth';
-import "./ListIngrediente.scss";
+import { DeleteOutlined , EditOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import { getAccessTokenApi, getRefreshTokenApi } from '../../../../api/auth';
 import Modal from "../../../Modal/Modal";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend} from "react-dnd-html5-backend";
-import update from "immutability-helper";
 import { CSVLink } from "react-csv";
 import AddIngredienteForm from '../AddIngredienteForm/AddIngredienteForm';
 import { deleteIngredientes, updateIngredientes } from '../../../../api/ingrediente';
+import EditIngredienteForm from '../EditIngredienteForm';
+import { decodeRolJWT } from '../../../../utils/formValidation';
+import ViewIngredienteForm from '../ViewIngredienteForm/ViewIngredienteForm';
 
 export default function ListIngredientes(props) {
     const { ingredientes, setReloadIngredientes } = props;
@@ -23,8 +24,12 @@ export default function ListIngredientes(props) {
     const [ isVisibleModal, setIsVisibleModal ] = useState(false);
     const [ modalTitle, setModalTitle ] = useState("");
     const [ modalContent, setModalContent ] = useState(null);
+    const [ page, setPage ] = useState(1);
+    const [ pageSize, setPageSize ] = useState(4);
     let [ filteredData ] = useState();
-    const type = "DraggableBodyRow";
+
+    const token = getRefreshTokenApi();
+    const { rol, email } = decodeRolJWT(token);
    
     useEffect(() => {
       loadData();
@@ -36,49 +41,7 @@ export default function ListIngredientes(props) {
       setSearchText("");
       setLoading( false );
     }
-  
-    const DraggableBodyRow = ({
-      index,
-      moveRow,
-      className,
-      style,
-      ...restProps
-    }) => {
-       const ref = useRef();
-       const [{ isOver, dropClassName }, drop] = useDrop({
-          accept: type,
-          collect: ( monitor ) => {
-              const { index: dragIndex } = monitor.getItem() || {};
-              if( dragIndex === index ){
-                  return {};
-              }
-              return {
-                  isOver: monitor.isOver(),
-                  dropClassName : dragIndex < index ? "drop-down-downward" : "drop-over-upward"
-              }
-          },
-          drop : (item) => {
-              moveRow(item.index, index)
-          },
-       });
-       const [, drag] = useDrag({
-          type,
-          item: { index},
-          collect: (monitor) => ({
-              isDragging : monitor.isDragging()
-          })
-      });
-       drop(drag(ref));
-       return (
-          <tr
-              ref={ref}
-              className={`${className}${isOver ? dropClassName : ""}`}
-              style={{ cursor: "move", ...style}}
-              {...restProps}
-          />
-       )
-    };
-  
+
     const dataIngredienteMap = gridData.map( (item) => ({
        ...item
     })); 
@@ -88,24 +51,13 @@ export default function ListIngredientes(props) {
       key: item.uid,
       info: `prueba`
    }));
-  
-   const moveRow = useCallback((dragIndex, hoverIndex) => {
-      const dragRow = modifiedIngredienteData[dragIndex];
-      setGridData(update(
-          modifiedIngredienteData, {
-              $splice : [
-                  [dragIndex, 1 ],
-                  [hoverIndex, 0, dragRow ]
-              ]
-          }
-      ));
-    }, 
-       [modifiedIngredienteData]
-    );
-  
+
    const handleDelete = ( value ) => {
       const uid = value.uid;
       const token = getAccessTokenApi();
+      const { estado, mensaje} = decodeRolJWT(token);
+      if( !estado ) {  return notification["error"]({ message: mensaje});}
+      
       deleteIngredientes( token, uid).then( response => {
           notification["success"]({
               message: response.message
@@ -157,6 +109,9 @@ export default function ListIngredientes(props) {
    };
   
    const edit = ( record ) => {
+      const token = getAccessTokenApi();
+      const { estado, mensaje} = decodeRolJWT(token);
+      if( !estado ) {  return notification["error"]({ message: mensaje});}
       form.setFieldsValue({
           nombre: "",
           agnoMercado: "",
@@ -194,6 +149,17 @@ export default function ListIngredientes(props) {
       const { order, field } = sorter;
       setFilteredInfo( filters );
       setSortedInfo({ columnKey: field, order});
+   }
+
+   const viewIngredienteForm = ( ingrediente ) => {
+       setModalTitle(`Ingrediente: ${ ingrediente.nombre } `);
+       setIsVisibleModal(true);
+       setModalContent(
+            <ViewIngredienteForm
+                ingrediente={ingrediente}
+                setIsVisibleModal={setIsVisibleModal}
+            />
+       );
    }
    
    const columns = [
@@ -247,6 +213,9 @@ export default function ListIngredientes(props) {
                           <DeleteOutlined />
                       </Button>        
                   </Popconfirm>
+                  <Button type='primary' onClickCapture={() => editarForm(record)}>
+                          <EditOutlined/>
+                  </Button> 
                   { editable ? (
                       <span>
                           <Space size="middle">
@@ -258,10 +227,13 @@ export default function ListIngredientes(props) {
                           </Space>
                       </span>
                   ): (
-                      <Button type='primary' onClickCapture={() => edit(record)} >
+                      <Button type='edit' onClickCapture={() => edit(record)} >
                           <EditOutlined />
                       </Button>
                   )}
+                  <Button type="primary" onClickCapture={() => viewIngredienteForm(record)}>
+                     <EyeOutlined />
+                </Button> 
               </Space>
            ) : null;
          }
@@ -323,18 +295,37 @@ export default function ListIngredientes(props) {
       setGridData(filteredData);
    };
   
-   const addCultivoModal = () => {
+   const addIngredienteModal = () => {
+      const token = getAccessTokenApi();
+      const { estado, mensaje} = decodeRolJWT(token);
+      if( !estado ) {  return notification["error"]({ message: mensaje});}
       setIsVisibleModal(true);
       setModalTitle("Creando nuevo ingrediente activo");
       setModalContent(
           <AddIngredienteForm setIsVisibleModal={ setIsVisibleModal } setReloadIngredientes={setReloadIngredientes}/>
       )
   };
+
+  const editarForm = ( ingrediente ) => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
+    setIsVisibleModal(true);
+    setModalTitle(`Editar ingrediente activo: ${ingrediente.nombre}`);
+    setModalContent(
+        <EditIngredienteForm
+            setIsVisibleModal={setIsVisibleModal}
+            setReloadIngredientes={setReloadIngredientes}
+            ingrediente={ingrediente}
+        />
+    )
+  }
+
   
     return (
       <div className='data-table' style={{ marginTop: 30}}>
           <div className="menu-web-list__header">
-               <Button type="primary" onClick={ () => addCultivoModal()} >Crear Ingrediente activo
+               <Button type="primary" onClick={ () => addIngredienteModal()} >Crear Ingrediente activo
                </Button>
           </div>
           <Space style={{marginBottom: 16}}>
@@ -360,16 +351,6 @@ export default function ListIngredientes(props) {
               <DndProvider backend={HTML5Backend}>
                   <Table className='data-table-2'
                       columns={mergedColumns}
-                      components= {{
-                          body: {
-                              cell: EditableCell,
-                              row: DraggableBodyRow
-                          }
-                      }}
-                      onRow={(record, index) => ({
-                          index,
-                          moveRow
-                      })}
                       dataSource={filteredData && filteredData.length ? filteredData: modifiedIngredienteData}
                       expandable={{
                           expandedRowRender: ( record )=> (
@@ -380,6 +361,14 @@ export default function ListIngredientes(props) {
                       bordered
                       loading={loading}
                       onChange={handleChange}
+                      pagination={{
+                        current: page,
+                        pageSize: pageSize,
+                        onChange: ( page, pageSize) => {
+                            setPage(page);
+                            setPageSize(pageSize)
+                        }
+                    }}
                   >
                   </Table>
               </DndProvider>
@@ -393,4 +382,4 @@ export default function ListIngredientes(props) {
          </Modal>
       </div>
     );
-  };
+};

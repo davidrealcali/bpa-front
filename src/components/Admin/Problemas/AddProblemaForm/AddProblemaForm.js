@@ -3,6 +3,7 @@ import { Form, Input, Select, Button, Row, Col, notification } from "antd";
 import "./AddProblemaForm.scss";
 import { getAccessTokenApi } from '../../../../api/auth';
 import { postProblemaApi } from '../../../../api/problema';
+import TextArea from 'antd/lib/input/TextArea';
 
 export default function AddProblemaForm( props ) {
   const { setIsVisibleModal, setReloadProblemas } = props;
@@ -94,8 +95,9 @@ function AddForm( props ) {
           <Row gutter={24}>
               <Col span={12}>
                   <Form.Item>
-                      <Input
+                      <TextArea
                           placeholder="Sintomas"
+                          rows={5}
                           value={problemaData.sintomas}
                           onChange ={ e => setProblemaData({...problemaData , sintomas: e.target.value })}
                        />
@@ -103,8 +105,9 @@ function AddForm( props ) {
               </Col>
               <Col span={12}>
                   <Form.Item>
-                      <Input
+                      <TextArea
                           placeholder="Ciclo de vida"
+                          rows={5}
                           value={problemaData.cicloVida}
                           onChange ={ e => setProblemaData({...problemaData , cicloVida: e.target.value })}
                        />

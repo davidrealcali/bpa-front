@@ -7,7 +7,8 @@ import {
     MenuOutlined,
     DingtalkOutlined,
     AlertOutlined,
-    WarningOutlined 
+    WarningOutlined,
+    MessageOutlined
   } from '@ant-design/icons';
 
 import './MenuSider.scss';
@@ -59,6 +60,12 @@ export default function MenuSider (props) {
                     <Link to={"/admin/ingredientes"}>
                             <AlertOutlined />
                           <span className='nav-text'>Ingredientes activos</span>
+                    </Link>
+                </Menu.Item>
+                <Menu.Item key="8">
+                    <Link to={"/admin/blog"}>
+                           <MessageOutlined />
+                          <span className='nav-text'>Blog</span>
                     </Link>
                 </Menu.Item>
             </Menu>

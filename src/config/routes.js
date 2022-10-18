@@ -10,10 +10,12 @@ import AdminCultivo from  "../pages/Admin/Cultivos";
 import AdminPlaguicida from "../pages/Admin/Plaguicidas"
 import AdminProblemas from "../pages/Admin/Problemas";
 import AdminIngredientes from "../pages/Admin/Ingredientes";
+import AdminBlog from "../pages/Admin/Blog";
 //Pages
 import Home from '../pages/Home';
 import Contact from '../pages/Contact';
 import Productos from "../pages/Productos";
+import Blog from "../pages/Blog";
 //Other
 import Error404 from "../pages/Error404";
 
@@ -65,6 +67,11 @@ const routes  = [
                 exact: true
             },
             {
+                path: "/admin/blog",
+                component: AdminBlog,
+                exact: true
+            },
+            {
                 component: Error404
             }
         ]
@@ -87,6 +94,16 @@ const routes  = [
             {
                 path: "/productos",
                 component: Productos,
+                exact: true
+            },
+            {
+                path: "/blog",
+                component: Blog,
+                exact: true
+            },
+            {
+                path: "/blog/:url",
+                component: Blog,
                 exact: true
             },
             {

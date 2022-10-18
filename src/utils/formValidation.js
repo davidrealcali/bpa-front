@@ -1,3 +1,6 @@
+import jwt_decode from "jwt-decode";
+import { notification } from "antd";
+import { getRefreshTokenApi } from "../api/auth";
 /* eslint-disable no-useless-escape */
 export function minLengthValidation( inputData, minLength) {
     const { value } = inputData;
@@ -32,4 +35,12 @@ export function emailValidation( inputData ) {
 function removeClassErrorSuccess( inputData ){
     inputData.classList.remove('success');
     inputData.classList.remove("error");
+}
+
+export function decodeRolJWT( token ) {
+   // const tokenAct = getRefreshTokenApi(token);
+    let { id, rol, email } = jwt_decode(token);
+    const estado = rol === "ADMIN_ROLE" ? true : false;
+    const mensaje = `El usuario ${email} no tiene permisos para realizar esta acción`;
+    return { id, estado, mensaje };
 }

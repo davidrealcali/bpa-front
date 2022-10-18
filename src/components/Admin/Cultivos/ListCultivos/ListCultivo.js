@@ -1,15 +1,20 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {Button,  Popconfirm, Table, notification, Space, Form, Input, confirm } from "antd";
-import { DeleteOutlined , EditOutlined, SearchOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import {Button,  Popconfirm, Table, notification, Space, Form, Input } from "antd";
+import { DeleteOutlined , EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { getAccessTokenApi } from '../../../../api/auth';
 import { deleteCultives, updateCultives } from '../../../../api/cultivo';
-import "./ListCultivo.css";
 import Modal from "../../../Modal/Modal";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
+import { DndProvider } from "react-dnd";
 import { HTML5Backend} from "react-dnd-html5-backend";
-import update from "immutability-helper";
 import { CSVLink } from "react-csv";
 import AddCultivoForm from '../AddCultivoForm/AddCultivoForm';
+import ViewCultivoForm from "../ViewCultivoForm";
+import { getDataByCultive } from '../../../../api/cultivo';
+import { decodeRolJWT } from '../../../../utils/formValidation';
+
+import "./ListCultivo.css";
+import "./ListCultivos.scss";
+
 
 export default function ListCultivo( props ) {
   const { cultivos, setReloadCultivos } = props;
@@ -23,8 +28,9 @@ export default function ListCultivo( props ) {
   const [ isVisibleModal, setIsVisibleModal ] = useState(false);
   const [ modalTitle, setModalTitle ] = useState("");
   const [ modalContent, setModalContent ] = useState(null);
+  const [ page, setPage ] = useState(1);
+  const [ pageSize, setPageSize ] = useState(5);
   let [ filteredData ] = useState();
-  const type = "DraggableBodyRow";
  
   useEffect(() => {
     loadData();
@@ -37,48 +43,6 @@ export default function ListCultivo( props ) {
     setLoading( false );
   }
 
-  const DraggableBodyRow = ({
-    index,
-    moveRow,
-    className,
-    style,
-    ...restProps
-  }) => {
-     const ref = useRef();
-     const [{ isOver, dropClassName }, drop] = useDrop({
-        accept: type,
-        collect: ( monitor ) => {
-            const { index: dragIndex } = monitor.getItem() || {};
-            if( dragIndex === index ){
-                return {};
-            }
-            return {
-                isOver: monitor.isOver(),
-                dropClassName : dragIndex < index ? "drop-down-downward" : "drop-over-upward"
-            }
-        },
-        drop : (item) => {
-            moveRow(item.index, index)
-        },
-     });
-     const [, drag] = useDrag({
-        type,
-        item: { index},
-        collect: (monitor) => ({
-            isDragging : monitor.isDragging()
-        })
-    });
-     drop(drag(ref));
-     return (
-        <tr
-            ref={ref}
-            className={`${className}${isOver ? dropClassName : ""}`}
-            style={{ cursor: "move", ...style}}
-            {...restProps}
-        />
-     )
-  };
-
   const dataCultivoMap = gridData.map( (item) => ({
      ...item
   })); 
@@ -90,23 +54,11 @@ export default function ListCultivo( props ) {
      y su nombre cientifico es "${item.nombreCientifico}"`
  }));
 
- const moveRow = useCallback((dragIndex, hoverIndex) => {
-    const dragRow = modifiedCultivoData[dragIndex];
-    setGridData(update(
-        modifiedCultivoData, {
-            $splice : [
-                [dragIndex, 1 ],
-                [hoverIndex, 0, dragRow ]
-            ]
-        }
-    ));
-  }, 
-     [modifiedCultivoData]
-  );
-
  const handleDelete = ( value ) => {
-    const uid = value.uid;
     const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
+    const uid = value.uid;
     deleteCultives( token, uid).then( response => {
         notification["success"]({
             message: response.message
@@ -132,10 +84,12 @@ export default function ListCultivo( props ) {
 
  const save = async ( key ) => {
     try{
+        const token = getAccessTokenApi();
+        const { estado, mensaje} = decodeRolJWT(token);
+        if( !estado ) {  return notification["error"]({ message: mensaje});}
         const row = await form.validateFields();
         const newData = [...modifiedCultivoData];
         const index = newData.findIndex((item) => key === item.key );
-        const token = getAccessTokenApi();
         if( index > -1 ){
             const item = newData[index];
             newData.splice(index, 1, {...item, ...row});
@@ -158,6 +112,9 @@ export default function ListCultivo( props ) {
  };
 
  const edit = ( record ) => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
     form.setFieldsValue({
         nombreComun: "",
         nombreCientifico: "",
@@ -167,12 +124,6 @@ export default function ListCultivo( props ) {
     });
     setEditRowKey(record.key);
  };
-
- const handleChange = ( _, filters, sorter ) => {
-    const { order, field } = sorter;
-    setFilteredInfo( filters );
-    setSortedInfo({ columnKey: field, order});
- }
  
  const columns = [
     {
@@ -233,6 +184,9 @@ export default function ListCultivo( props ) {
                         <EditOutlined />
                     </Button>
                 )}
+                <Button type="primary" onClickCapture={() => viewMenuForm(record)}>
+                     <EyeOutlined />
+                </Button>
             </Space>
          ) : null;
        }
@@ -295,10 +249,25 @@ export default function ListCultivo( props ) {
  };
 
  const addCultivoModal = () => {
+    const token = getAccessTokenApi();
+    const { estado, mensaje} = decodeRolJWT(token);
+    if( !estado ) {  return notification["error"]({ message: mensaje});}
     setIsVisibleModal(true);
     setModalTitle("Creando nuevo cultivo");
     setModalContent(
         <AddCultivoForm setIsVisibleModal={ setIsVisibleModal } setReloadCultivos={setReloadCultivos}/>
+    )
+};
+
+const viewMenuForm = cultivo => {
+    setIsVisibleModal(true);
+    setModalContent(
+        <ViewCultivoForm
+            setIsVisibleModal={setIsVisibleModal}
+            setReloadCultivos={setReloadCultivos }
+            cultivo={cultivo}
+            //dataProblema={dataProblema}
+        />
     )
 };
 
@@ -333,14 +302,9 @@ export default function ListCultivo( props ) {
                     columns={mergedColumns}
                     components= {{
                         body: {
-                            cell: EditableCell,
-                            row: DraggableBodyRow
+                            cell: EditableCell
                         }
                     }}
-                    onRow={(record, index) => ({
-                        index,
-                        moveRow
-                    })}
                     dataSource={filteredData && filteredData.length ? filteredData: modifiedCultivoData}
                     expandable={{
                         expandedRowRender: ( record )=> (
@@ -350,9 +314,13 @@ export default function ListCultivo( props ) {
                     }}
                     bordered
                     loading={loading}
-                    onChange={handleChange}
                     pagination={{
-                        pageSize: 6
+                        current: page,
+                        pageSize: pageSize,
+                        onChange: ( page, pageSize) => {
+                            setPage(page);
+                            setPageSize(pageSize)
+                        }
                     }}
                 >
                 </Table>
@@ -362,6 +330,7 @@ export default function ListCultivo( props ) {
                 title={modalTitle}
                 isVisible = { isVisibleModal }
                 setIsVisible = { setIsVisibleModal }
+                width="60%"
             >
                 {modalContent}
        </Modal>

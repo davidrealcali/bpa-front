@@ -78,3 +78,39 @@ export function postCultiveApi ( token, data ) {
         return err;
     });
 }
+
+export function getDataByCultive( token, id ) {
+    const url = `${basePath}/probleCulPlagui/getDataByCultivo/${id}`;
+    const params = {
+        method:"GET",
+        headers : {
+            "Content-Type" : "application/json",
+             Authorization: token
+        }
+    }
+    return fetch( url, params ).then( response => {
+        return response.json();
+    }).then( result => {
+        return result
+    }).catch( err  => {
+        return err;
+    });
+}
+
+export function getPlaguicidaByProblema( token, id ){
+    const url = `${basePath}/probleCulPlagui/getDataByProblema/${id}`;
+    const params = {
+        method:"GET",
+        headers : {
+            "Content-Type" : "application/json",
+             Authorization: token
+        }
+    }
+    return fetch( url, params ).then( response => {
+        return response.json();
+    }).then( result => {
+        return result
+    }).catch( err  => {
+        return err;
+    });
+}

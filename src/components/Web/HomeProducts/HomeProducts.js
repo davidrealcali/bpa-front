@@ -1,12 +1,12 @@
 import React from 'react';
 import {Row, Col, Card, Button } from "antd";
 import {Link} from "react-router-dom";
-import reactJsHooks from  "../../../assets/img/jpg/react-js-hooks.jpg";
-import reactNative from  "../../../assets/img/jpg/react-native.jpg";
-import wordPress from  "../../../assets/img/jpg/wordpress.jpg";
-import javasScript from  "../../../assets/img/jpg/javascript-es6.jpg";
-import prestaShop from  "../../../assets/img/jpg/prestashop-1-7.jpg";
-import cssGrid from  "../../../assets/img/jpg/css-grid.jpg";
+import reactJsHooks from  "../../../assets/img/jpg/2Acelga.jpeg";
+import reactNative from  "../../../assets/img/jpg/3Achiote.jpg";
+import wordPress from  "../../../assets/img/jpg/4Aguacate.jpg";
+import javasScript from  "../../../assets/img/jpg/7Aji.jpg";
+import prestaShop from  "../../../assets/img/jpg/8Ajo.jpg";
+import cssGrid from  "../../../assets/img/jpg/10Albahaca.jpg";
 
 import "./HomeProducts.scss";
 
@@ -22,32 +22,32 @@ export default function HomeProducts() {
                 <Col md={6}> 
                     <CardCourse
                         image={reactJsHooks}
-                        title="React JS Hooks"
-                        subtitle="Intermedio React"
+                        title="Acelga"
+                        subtitle="Acelga"
                         link="https://google.com"
                     />
                 </Col>
                 <Col md={6}> 
                     <CardCourse
-                        image={reactNative}
-                        title="React Native"
-                        subtitle="Intermedio React Native"
+                        image={reactJsHooks}
+                        title="Achiote"
+                        subtitle="Achiote"
                         link="https://google.com"
                     />
                 </Col>
                 <Col md={6}> 
                     <CardCourse
-                        image={javasScript}
-                        title="JavaScript"
-                        subtitle="Javascript es6"
+                        image={reactJsHooks}
+                        title="Alcachofa"
+                        subtitle="Alcachofa"
                         link="https://google.com"
                     />
                 </Col>
                 <Col md={6}> 
                     <CardCourse
-                        image={prestaShop}
-                        title="Prestashop"
-                        subtitle="Prestashop subtitle"
+                        image={reactJsHooks}
+                        title="Alcachofa"
+                        subtitle="Alcachofa"
                         link="https://google.com"
                     />
                 </Col>
@@ -55,9 +55,9 @@ export default function HomeProducts() {
             <Row className='row-courses'>
                  <Col md={6}> 
                     <CardCourse
-                        image={wordPress}
-                        title="wordPress"
-                        subtitle="wordPress"
+                        image={reactJsHooks}
+                        title="Aguacate"
+                        subtitle="Aguacate"
                         link="https://google.com"
                     />
                 </Col>
@@ -65,9 +65,9 @@ export default function HomeProducts() {
                 <Col md={6}/>
                 <Col md={6}>
                     <CardCourse
-                        image={cssGrid}
-                        title="wordPress"
-                        subtitle="wordPress"
+                        image={reactJsHooks}
+                        title="Ajenjo"
+                        subtitle="Ajenjo"
                         link="https://google.com"
                     />
                 </Col>

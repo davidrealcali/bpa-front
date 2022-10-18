@@ -1,14 +1,14 @@
 //import { DatePicker } from 'antd';
 import './App.scss';
 import React from 'react';
-import { HashRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 import routes from './config/routes';
-import AuthProvider from './providers/AuthProvider';
+import AuthProvider from './providers/AuthProvider';                               //icons
 
 function App() {
   return (
     <AuthProvider>
-      <Router basename={process.env.PUBLIC_URL}>
+      <Router>
        <Switch>
          {routes.map(( route, index ) => (
            <RouterWithSubRoutes key={index} {...route } />

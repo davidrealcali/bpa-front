@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
-import "./EditUserForm.scss"
 import { Avatar, Form, notification, Input, Select, Button, Row, Col, message} from "antd";
 import { useDropzone} from "react-dropzone";
 import Noavatar from "../../../../assets/img/png/no-avatar.png";
 import { UserOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { getAvatarApi, updateUserApi, uploadAvatarApi }  from '../../../../api/user';
-import { getAccessTokenApi } from '../../../../api/auth';
+import { getAccessTokenApi, getRefreshTokenApi, refreshAccessTokenApi } from '../../../../api/auth';
+
+import "./EditUserForm.scss";
 
 export default function EditUserForm ( props ) {
     const  { user, setIsVisibleModal, setReloadUsers } = props;
@@ -73,8 +74,10 @@ export default function EditUserForm ( props ) {
                     notification["success"]({
                         message: 'Se modificaron los datos con exito'
                     });
+                    refreshAccessTokenApi(getRefreshTokenApi());
                     setIsVisibleModal(false);
                     setReloadUsers(true);
+                    
                 });
             });
         } else {
@@ -82,6 +85,7 @@ export default function EditUserForm ( props ) {
                 notification["success"]({
                     message: 'Se modificaron los datos con exito'
                 });
+                refreshAccessTokenApi(getRefreshTokenApi());
                 setIsVisibleModal(false);
                 setReloadUsers(true);
             });
