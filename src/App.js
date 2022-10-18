@@ -9,8 +9,7 @@ import AuthProvider from './providers/AuthProvider';                            
 function App() {
   return (
     <AuthProvider>
-     {/* <Router>*/}
-         <Router basename={process.env.PUBLIC_URL}>
+     <Router>
        <Switch>
          {routes.map(( route, index ) => (
            <RouterWithSubRoutes key={index} {...route } />
