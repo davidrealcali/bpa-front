@@ -330,7 +330,7 @@ const viewMenuForm = cultivo => {
                 title={modalTitle}
                 isVisible = { isVisibleModal }
                 setIsVisible = { setIsVisibleModal }
-                width="60%"
+                width="50%"
             >
                 {modalContent}
        </Modal>

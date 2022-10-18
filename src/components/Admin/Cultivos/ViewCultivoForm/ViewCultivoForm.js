@@ -45,8 +45,8 @@ export default function ViewCultivoForm(props) {
       return (
         <Card
           hoverable
-          style={{ width: 270, marginLeft: 240 }}
-          cover={<img alt="example" style={{ height: 220}}src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}
+          style={{ margin: "center" }}
+          //cover={<img alt="example" style={{ height: 220}}src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}
         >
        <Meta title="Nombre Comun" description={ cultivo.nombreComun } />
        <Meta title="Nombre Cientifico" description={ cultivo.nombreCientifico } />
@@ -118,10 +118,10 @@ function InfoCultivoProblema ( props ) {
         <Space style={{marginBottom: 16}}>
             <Input
                   placeholder='Ingrese un texto de busqueda'
-                  onChange={handleInputChange}
+                  //onChange={handleInputChange}
                   type="text"
                   allowClear
-                  value={searchText}
+                  //value={searchText}
                 />   
             </Space>
             <Button style={{ marginLeft: 15}} onClick={null} type="primary">Buscar</Button>
@@ -176,7 +176,7 @@ const consultarPlaguicidasAsociados = ( record ) => {
     return (
         <Card
             style={{
-              width: '100%',
+              width: '100%'
             }}
             title={cultivoData.nombreComun }
             //extra={<a href="#">More</a>}
@@ -192,7 +192,7 @@ const consultarPlaguicidasAsociados = ( record ) => {
 }
   
   return (
-    <div className='edit-cultivo-web-form'>
+    <div className='edit-cultivo-web-form' style={{margin:"center"}}>
         <ViewCultivoForm
             cultivoData={cultivoData}
             setReloadCultivos={setReloadCultivos}
