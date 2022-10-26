@@ -4,6 +4,7 @@ import { getAllIngredientes } from '../../../api/ingrediente';
 import { getAllPlaguicidas } from '../../../api/plaguicida';
 import ListPlaguicidas from '../../../components/Admin/Plaguicidas/ListPlaguicidas';
 
+import "./Plaguicidas.scss";
 
 export default function Plaguicidas() {
 

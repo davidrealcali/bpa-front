@@ -39,8 +39,6 @@ export function deleteCultives ( token, uid ){
 }
 
 export function updateCultives ( token, id, data ){
-    console.log('data en api', data);
-    console.log('id api', id);
     const url = `${basePath}/cultivos/actualizar-cultivo/${id}`;
     const params = {
         method: "PUT",
@@ -79,7 +77,7 @@ export function postCultiveApi ( token, data ) {
     });
 }
 
-export function getDataByCultive( token, id ) {
+export async function getDataByCultive( token, id ) {
     const url = `${basePath}/probleCulPlagui/getDataByCultivo/${id}`;
     const params = {
         method:"GET",

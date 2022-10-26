@@ -11,6 +11,8 @@ import AdminPlaguicida from "../pages/Admin/Plaguicidas"
 import AdminProblemas from "../pages/Admin/Problemas";
 import AdminIngredientes from "../pages/Admin/Ingredientes";
 import AdminBlog from "../pages/Admin/Blog";
+import LmrCultivo from "../pages/Admin/Lmr";
+import Consultorio from "../pages/Admin/Consultorio";
 //Pages
 import Home from '../pages/Home';
 import Contact from '../pages/Contact';
@@ -69,6 +71,16 @@ const routes  = [
             {
                 path: "/admin/blog",
                 component: AdminBlog,
+                exact: true
+            },
+            {
+                path: "/admin/lmr",
+                component: LmrCultivo,
+                exact: true
+            },
+            {
+                path: "/admin/consultorio",
+                component: Consultorio,
                 exact: true
             },
             {
