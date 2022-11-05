@@ -40,8 +40,8 @@ function ViewPlaguicida( props ) {
     const { plaguicidaData, disabled, ingredienteData } = props;
     const data = [];
     let textoIngrediente = "";
-
-    if( ingredienteData.length > 0 ) {
+    console.log(ingredienteData);
+    if( Object.keys(ingredienteData).length > 0 ) {
         ingredienteData.forEach((element,index) => {
             data.push(element.ingrediente);
             textoIngrediente+= `${index + 1 }. ${element.ingrediente.nombre}
