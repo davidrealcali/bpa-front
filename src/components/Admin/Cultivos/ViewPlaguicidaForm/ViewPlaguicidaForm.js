@@ -99,13 +99,10 @@ export default function ViewPlaguicidaForm(props) {
   const columns = [
         { title: 'Nombre',  dataIndex: 'nombre', width: 100, ...getColumnSearchProps('nombre')},
         { title: 'Registro Ica', dataIndex: 'registroIca', width: 100, ...getColumnSearchProps('registroIca')},
-        { title: 'Tipo egistro', dataIndex: 'tipoRegistro', width: 100, ...getColumnSearchProps('tipoRegistro')},
-        { title: 'Titular Registro', dataIndex: 'titularRegistro', width: 100, ...getColumnSearchProps('titularRegistro') },
-        { title: 'Recomendaciones', dataIndex: 'recomendaciones', width: 100, ...getColumnSearchProps('recomendaciones')},
         { title: 'Clase Plaguicida', dataIndex: 'clasePlaguicida', width: 100, ...getColumnSearchProps('clasePlaguicida')},
-        { title: 'Tipo Vigencia', dataIndex: 'tipoVigecia', width: 100, ...getColumnSearchProps('tipoVigencia')},
-        { title: 'Categoria Toxicologica', dataIndex: 'categoriaToxicologica', width: 100, ...getColumnSearchProps('categoriaToxicologica') },
-        { title: 'Formulacion', dataIndex: 'formulacion', width: 100, ...getColumnSearchProps('formulacion')},
+        { title: 'Periodo carencia', dataIndex: 'periodoCarencia', width: 100, ...getColumnSearchProps('periodoCarencia')},
+        { title: 'Periodo reentrada', dataIndex: 'periodoReentrada', width: 100, ...getColumnSearchProps('periodoReentrada') },
+        { title: 'Observaciones', dataIndex: 'observaciones', width: 100, ...getColumnSearchProps('observaciones')},
   ];
 
 const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -121,6 +118,9 @@ const handleReset = (clearFilters) => {
   
 plaguicida.forEach(element => {
     element.plaguicida.key = element.plaguicida._id;
+    element.plaguicida.periodoCarencia = element.periodoCarencia;
+    element.plaguicida.periodoReentrada = element.periodoReentrada;
+    element.plaguicida.observaciones = element.observaciones;
     dataPlaguicida.push(element.plaguicida);
 });
 

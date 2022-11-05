@@ -95,8 +95,8 @@ export async function getDataByCultive( token, id ) {
     });
 }
 
-export function getPlaguicidaByProblema( token, id ){
-    const url = `${basePath}/probleCulPlagui/getDataByProblema/${id}`;
+export function getPlaguicidaByProblema( token, id, id2 ){
+    const url = `${basePath}/probleCulPlagui/getDataByProblema/${id}/${id2}`;
     const params = {
         method:"GET",
         headers : {

@@ -167,10 +167,11 @@ function InfoCultivoProblema ( props ) {
       },
     ];
 
-    if ( dataProblema.length > 0 ) {
+    if ( Object.keys(dataProblema).length > 0) {
         dataProblema.forEach(element => {
             element.problema.key = element.uid;
             element.problema.problemaUid =  element.problema._id;
+            element.problema.cultivoUid = element.cultivo;
             data2.push(element.problema);
          });
     }
@@ -193,7 +194,7 @@ function InfoCultivoProblema ( props ) {
 }
 
 const consultarPlaguicidasAsociados = ( record ) => {
-  getPlaguicidaByProblema( token, record.problemaUid ).then( response => {
+  getPlaguicidaByProblema( token, record.problemaUid, record.cultivoUid ).then( response => {
     if( response.data[0].plaguicida == null ) {
         notification["error"]({
           message: "No hay plaguicidas registrados para atacar el problema"
